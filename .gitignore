@@ -356,3 +356,9 @@ MigrationBackup/
 /.vs
 /out/build/x64-Debug
 cscope*
+
+# Ignore build folder
+build
+
+# Ignore vscode settings
+.vscode

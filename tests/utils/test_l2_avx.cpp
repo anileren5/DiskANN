@@ -323,7 +323,7 @@ void testStreamBufImpl() {
   }
 
   //  diskann::cout << "Printing with diskann::cout" << std::endl;
-  //#pragma omp parallel for schedule(dynamic, 64)
+  // #pragma omp parallel for schedule(dynamic, 64)
   //  for (int i = 0; i < v.size(); i++) {
   //    diskann::cout << std::to_string(i) + ",";
   //    if (i != 0 && i % 10 == 0) {

@@ -1,4 +1,7 @@
 # DiskANN
+
+This repository is a fork of [microsoft/DiskANN](https://github.com/microsoft/DiskANN), adapted for the research project *"Billion-Scale Vector Search with GPU-Accelerated ANN Streaming Index"* conducted at the [Data-Intensive Applications and Systems (DIAS) Lab](https://www.epfl.ch/labs/dias/) at EPFL.
+
 ##Linux build:
 
 Install the following packages through apt-get, and Intel MKL either by downloading the installer or using [apt](https://software.intel.com/en-us/articles/installing-intel-free-libs-and-python-apt-repo) (we tested with build 2019.4-070).

@@ -362,3 +362,6 @@ build
 
 # Ignore vscode settings
 .vscode
+
+# Ignore datasets
+data

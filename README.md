@@ -1,5 +1,8 @@
 # DiskANN
 
+This repository is a fork of [microsoft/DiskANN](https://github.com/microsoft/DiskANN), adapted for the research project *"Billion-Scale Vector Search with GPU-Accelerated ANN Streaming Index"* conducted at the [Data-Intensive Applications and Systems (DIAS) Lab](https://www.epfl.ch/labs/dias/) at EPFL.
+
+
 [![DiskANN Main](https://github.com/microsoft/DiskANN/actions/workflows/push-test.yml/badge.svg?branch=main)](https://github.com/microsoft/DiskANN/actions/workflows/push-test.yml)
 [![PyPI version](https://img.shields.io/pypi/v/diskannpy.svg)](https://pypi.org/project/diskannpy/)
 [![Downloads shield](https://pepy.tech/badge/diskannpy)](https://pepy.tech/project/diskannpy)

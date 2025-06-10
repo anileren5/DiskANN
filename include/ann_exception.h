@@ -10,6 +10,7 @@
 #ifndef _WINDOWS
 #define __FUNCSIG__ __PRETTY_FUNCTION__
 #endif
+#include <cstdint>
 
 namespace diskann
 {

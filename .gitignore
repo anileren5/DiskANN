@@ -378,3 +378,6 @@ gperftools
 
 # Rust
 rust/target
+
+# Exclude vscode workspace settings
+.vscode

@@ -1,0 +1,2 @@
+- search_disk_index does not work properly, it just puts 0's to its outputs for ids and tags.
+- seach_memory_index seems working correctly but you should not give the groundtruth file to this script because it aborts for some reason. Instead, you should use calculate_recall script.

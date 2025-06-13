@@ -32,7 +32,9 @@ int build_in_memory_index(const std::string& data_path,
   paras.Set<bool>("saturate_graph", 0);
   paras.Set<unsigned>("num_threads", num_threads);
 
-  _u64 data_num, data_dim;
+  _u64 data_num, data_dim;  // data_num is the number of vectors, data_dim is
+                            // the dimension of each vector. they are extracted
+                            // from the first 4+4=8 bytes of the binary file.
   diskann::get_bin_metadata(data_path, data_num, data_dim);
   diskann::cout << "Building in-memory index with parameters: data_file: "
                 << data_path << "tags file: " << tags_file << " R: " << R
@@ -47,12 +49,17 @@ int build_in_memory_index(const std::string& data_path,
   diskann::Index<T, TagT> index(distMetric, data_dim, data_num, dynamic_index,
                                 single_file_index,
                                 true);  // enable_tags forced to true!
-  if (dynamic_index) {
+  if (dynamic_index) {  // It seems that dynamic_index is not used in the
+                        // branching code, but it is passed to the Index
+                        // constructor.
     std::vector<TagT> tags(data_num);
-    std::iota(tags.begin(), tags.end(), 0);
+    std::iota(tags.begin(), tags.end(),
+              0);  // fill tags with 0, 1, 2, ..., data_num-1
 
     auto s = std::chrono::high_resolution_clock::now();
-    index.build(data_path.c_str(), data_num, paras, tags);
+    index.build(data_path.c_str(), data_num, paras,
+                tags);  // build the index from the data file, using the
+                        // parameters and tags.
     std::chrono::duration<double> diff =
         std::chrono::high_resolution_clock::now() - s;
 
@@ -68,7 +75,7 @@ int build_in_memory_index(const std::string& data_path,
 
     diskann::cout << "Indexing time: " << diff.count() << "\n";
   }
-  index.save(save_path.c_str());
+  index.save(save_path.c_str());  // save the index to the specified path
 
   return 0;
 }

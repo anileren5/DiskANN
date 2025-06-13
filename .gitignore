@@ -363,5 +363,7 @@ build
 # Ignore vscode settings
 .vscode
 
-# Ignore datasets
+# Ignore some experimental files
 data
+index
+results

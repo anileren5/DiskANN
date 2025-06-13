@@ -2652,6 +2652,7 @@ namespace diskann {
     }
     diskann::cout << std::endl;
   }
+  
   template<typename T, typename TagT>
   void Index<T, TagT>::are_deleted_points_in_graph() const {
     std::vector<std::pair<_u32, _u32>> start_end_pairs;

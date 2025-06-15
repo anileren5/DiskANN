@@ -187,6 +187,6 @@ endif()
 
 # formatter
 if (NOT MSVC)
-	add_custom_command(TARGET generate_pq PRE_BUILD COMMAND clang-format -i ../../../include/*.h ../../../src/*.cpp  ../../../tests/*.cpp ../../../src/dll/*.cpp ../../../tests/utils/*.cpp)
+	#add_custom_command(TARGET generate_pq PRE_BUILD COMMAND clang-format -i ../../../include/*.h ../../../src/*.cpp  ../../../tests/*.cpp ../../../src/dll/*.cpp ../../../tests/utils/*.cpp)
 endif()
 

@@ -258,7 +258,7 @@ void search_kernel(diskann::MergeInsert<T>        &merge_insert,
   float    *gt_dists = nullptr;
   size_t    query_num, query_dim, query_aligned_dim, gt_num, gt_dim;
 
-  const std::string temp = "/mnt/t-adisin/sift_query.bin";
+  const std::string temp = query_file;;
   std::cout << "Loading query : " << temp << std::endl;
   // load query + truthset
   diskann::load_aligned_bin<T>(temp, query, query_num, query_dim,
@@ -397,6 +397,8 @@ void insertion_kernel(diskann::MergeInsert<T> &merge_insert,
     if ((i % 1000000 == 0) && (i > 0))
       std::cout << "Inserted another 1M points" << std::endl;
   }
+  // Note: insert_latencies[(size_t) (0.10 * ((double) npts))] causes Segmentation fault
+  /*
   std::cout << "Mem index insertion time : " << timer.elapsed() / 1000 << " ms"
             << std::endl
             << "10th percentile insertion time : "
@@ -405,8 +407,10 @@ void insertion_kernel(diskann::MergeInsert<T> &merge_insert,
             << "50th percentile insertion time : "
             << insert_latencies[(size_t) (0.5 * ((double) npts))] << " microsec"
             << "90th percentile insertion time : "
+            /
             << insert_latencies[(size_t) (0.90 * ((double) npts))]
             << " microsec" << std::endl;
+  */
   ::_insertions_done.store(true);
   delete[] data_insert;
   delete[] tag_data;
@@ -561,6 +565,8 @@ void run_all_iters(std::string base_prefix, std::string merge_prefix,
     diskann::load_bin<TagT>(active_tags_file, tag_data, tag_num, tag_dim,
                             metadata[7]);
   } else {
+    // Note: Although null is passed as the parameter for tags, it does not generate simple tags (0, npts-1).
+    // Because of this, it results in a segmentation fault. To avoid this, run ./scripts/generate_tags.sh
     diskann::load_bin<TagT>(active_tags_file, tag_data, tag_num, tag_dim);
   }
 

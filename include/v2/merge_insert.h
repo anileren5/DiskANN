@@ -28,7 +28,18 @@
 
 #include "windows_customizations.h"
 
-#define MERGE_TH 18000000
+/*
+From the original paper:
+Whenever the total memory footprint of the various RO-TempIndex exceeds a pre-specified threshold, the system invokes a background merge procedure 
+which serves to change the SSD-Resident LTI to reflect the inserts from the various instances of the RO-TempIndex and also the deletes from the DeleteList
+
+I believe this threshold is the one set below.
+*/
+
+// NOTE: Original value was 18000000 but it causes OOM on my machine (16 GB RAM). Reduced to 1/10th of the original value.
+// NOTE: It might be a good idea to make this as a command line argument in the future.
+
+#define MERGE_TH 1800000 
 
 namespace diskann {
 

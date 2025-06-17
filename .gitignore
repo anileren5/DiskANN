@@ -365,6 +365,5 @@ build
 
 # Ignore some experimental files
 data
-index
 results
 tmp

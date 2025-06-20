@@ -18,7 +18,7 @@ GT_FILE="./data/$DATASET/${DATASET}_groundtruth.bin"
 INDEX_PREFIX="./index/$DATASET/index_${DATASET}_learn_${CONFIG_TAG}"
 RESULT_PATH="./results/$DATASET/"
 TOP_K=100
-SEARCH_L_LIST="32 64 96 128 160 192 256 512 1024 2048 4096 8192"
+SEARCH_L_LIST="128 256 512 1024"
 
 # Run the command
 ./build/apps/search_memory_index \

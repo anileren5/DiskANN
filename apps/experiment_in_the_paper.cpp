@@ -199,20 +199,7 @@ int main(int argc, char **argv) {
     }
 
     std::cout << std::endl << "=================== Initial Search ===================" << std::endl;
-    try {
-        if (data_type == std::string("float")) search<float>(index, query_path, groundtruth_path, search_threads, K, L);
-        else if (data_type == std::string("uint8")) search<uint8_t>(index, query_path, groundtruth_path, search_threads, K, L);
-        else if (data_type == std::string("int8")) search<int8_t>(index, query_path, groundtruth_path, search_threads, K, L);
-        else {
-            std::cout << "Unsupported type. Use float/int8/uint8" << std::endl;
-            return -1;
-        }   
-    }
-    catch (std::exception &e) {
-        std::cout << std::string(e.what()) << std::endl;
-        diskann::cerr << "Index search failed." << std::endl;
-        return -1;
-    }
+    search<float>(index, query_path, groundtruth_path, search_threads, K, L);
     std::cout << "======================================================" << std::endl;
  
 
@@ -223,9 +210,7 @@ int main(int argc, char **argv) {
                                                     .build();
 
     for (uint32_t i = 0; i < n_iterations; i++) {
-        if (data_type == std::string("float")) delete_batch<float>(index, batch_size_in_percentage, n_vectors);
-        else if (data_type == std::string("uint8")) delete_batch<uint8_t>(index, batch_size_in_percentage, n_vectors);
-        else if (data_type == std::string("int8")) delete_batch<int8_t>(index, batch_size_in_percentage, n_vectors);
+        delete_batch<float>(index, batch_size_in_percentage, n_vectors);
     }
 
 

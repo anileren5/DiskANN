@@ -32,13 +32,6 @@ SEARCH_K=10
 SEARCH_L_LIST="20 40 60 80 100"
 THR=64
 
-# Filter options
-NUM_START_POINTS=50
-LABEL_FILE="data/zipf_labels_50_100K.txt"
-UNIVERSAL_LABEL=0
-FILTER_LABEL=1
-GT_FILTERED="data/$DATASET/gt100_learn-act${ACTIVE}-cons${CONS_INT}-max${INSERTS}_wlabel_${FILTER_LABEL}"
-
 # ====== Streaming build & search without filters ======
 echo "[1] Running streaming scenario (no filters)..."
 ./build/apps/test_streaming_scenario \

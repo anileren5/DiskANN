@@ -28,9 +28,6 @@ target_link_libraries(test_streaming_scenario ${PROJECT_NAME} ${DISKANN_TOOLS_TC
 add_executable(test_insert_deletes_consolidate test_insert_deletes_consolidate.cpp)
 target_link_libraries(test_insert_deletes_consolidate ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
 
-add_executable(experiment_in_the_paper experiment_in_the_paper.cpp)
-target_link_libraries(experiment_in_the_paper ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
-
 add_executable(batch_delete_reinsert batch_delete_reinsert.cpp)
 target_link_libraries(batch_delete_reinsert ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
 
@@ -43,7 +40,6 @@ if (NOT MSVC)
             range_search_disk_index
             test_streaming_scenario
             test_insert_deletes_consolidate
-            experiment_in_the_paper
             batch_delete_reinsert
             RUNTIME
     )

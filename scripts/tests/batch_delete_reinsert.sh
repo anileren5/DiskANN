@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Builds an index from all dataset vectors. Each cycle picks a subset (size set by batch_size_in_percentage),
+# deletes these vectors from the index, consolidates deletions, then reinserts them.
+# Repeats for n_iterations cycles. Mainly used to inspect stable recall, but also logs performance metrics
+# (QPS, latency, etc.). Useful for reproducing experiments like Figures 2 & 3 in FlashDiskANN.
+# Example plots are in the plots folder; example logs are in the experiments folder.
+
 # Change to project root
 cd "$(dirname "$0")/../.." || exit 1
 
@@ -21,8 +27,8 @@ ins_thr=32
 cons_thr=32
 build_thr=32
 search_thr=32
-batch_size_in_percentage=50
-n_iterations=10
+batch_size_in_percentage=10
+n_iterations=20
 
 ./build/apps/batch_delete_reinsert \
   --data_type "$data_type" \

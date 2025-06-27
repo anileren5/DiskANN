@@ -19,6 +19,68 @@
 
 namespace po = boost::program_options;
 
+void print_experiment_settings(
+    const std::string& data_type,
+    const std::string& data_path,
+    const std::string& query_path,
+    const std::string& chunks_groundtruth_path,
+    size_t chunk_size,
+    uint32_t R, uint32_t L, uint32_t K,
+    float alpha,
+    uint32_t insert_threads, uint32_t consolidate_threads,
+    uint32_t build_threads, uint32_t search_threads)
+{
+    const int width = 70;
+    std::string line(width, '=');
+
+    std::cout << "\n\n" << line << '\n';
+    std::cout << " Experiment Settings\n";
+    std::cout << line << '\n';
+
+    auto print_setting = [&](const std::string& name, const auto& value)
+    {
+        std::ostringstream oss;
+        oss << name << ": ";
+
+        std::string val_str;
+        if constexpr (std::is_same_v<std::decay_t<decltype(value)>, std::string>) {
+            val_str = value;
+        } else if constexpr (std::is_floating_point_v<std::decay_t<decltype(value)>>) {
+            std::ostringstream tmp;
+            tmp.precision(2);
+            tmp << std::fixed << value;
+            val_str = tmp.str();
+        } else {
+            val_str = std::to_string(value);
+        }
+
+        oss << val_str;
+        std::string line_str = oss.str();
+
+        if ((int)line_str.size() < width)
+            line_str += std::string(width - line_str.size(), ' ');
+
+        std::cout << line_str << '\n';
+    };
+
+    print_setting("data_type", data_type);
+    print_setting("data_path", data_path);
+    print_setting("query_path", query_path);
+    print_setting("chunks_groundtruth_path", chunks_groundtruth_path);
+    print_setting("chunk_size", chunk_size);
+
+    print_setting("R", R);
+    print_setting("L", L);
+    print_setting("K", K);
+    print_setting("alpha", alpha);
+
+    print_setting("insert_threads", insert_threads);
+    print_setting("consolidate_threads", consolidate_threads);
+    print_setting("build_threads", build_threads);
+    print_setting("search_threads", search_threads);
+
+    std::cout << line << "\n\n";
+}
 
 template <typename T, typename TagT = uint32_t>
 void calculate_recall(const uint32_t K, TagT*& groundtruth_ids, std::vector<TagT>& query_result_tags, const uint32_t query_num, const uint32_t groundtruth_dim, uint32_t chunk_index = 1, size_t chunk_size = 100000) {
@@ -302,6 +364,10 @@ int main(int argc, char **argv) {
         std::cerr << ex.what() << '\n';
         return -1;
     }
+
+    print_experiment_settings(data_type, data_path, query_path, chunks_groundtruth_path,
+        chunk_size, R, L, K, alpha,
+        build_threads, insert_threads, consolidate_threads, search_threads);
 
     if (data_type == std::string("int8"))
         experiment<int8_t>(data_path, query_path, chunks_groundtruth_path, chunk_size, R, L, K, alpha, build_threads, insert_threads, consolidate_threads, search_threads);

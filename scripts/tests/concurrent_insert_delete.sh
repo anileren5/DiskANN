@@ -7,8 +7,11 @@ cd "$(dirname "$0")/../.." || exit 1
 DATASET="sift"
 DATA_TYPE="float"
 DATA_PATH="data/$DATASET/${DATASET}_base.bin"
-R=64
-L=300
+QUERY_PATH="data/$DATASET/${DATASET}_query.bin"
+CHUNKS_GROUNDTRUTH_PATH+="data/$DATASET/${DATASET}_chunk_groundtruths/${DATASET}_chunk"
+R=32
+L=128
+K=100
 ALPHA=1.2
 CHUNK_SIZE=100000
 BUILD_THREADS=32
@@ -20,9 +23,12 @@ SEARCH_THREADS=32
 ./build/apps/concurrent_insert_delete \
   --data_type "$DATA_TYPE" \
   --data_path "$DATA_PATH" \
+  --query_path "$QUERY_PATH" \
+  --chunks_groundtruth_path "$CHUNKS_GROUNDTRUTH_PATH" \
   --chunk_size "$CHUNK_SIZE" \
   --R "$R" \
   --L "$L" \
+  --K "$K" \
   --alpha "$ALPHA" \
   --build_threads "$BUILD_THREADS" \
   --insert_threads "$INSERT_THREADS" \

@@ -2421,8 +2421,6 @@ consolidation_report Index<T, TagT, LabelT>::consolidate_deletes(const IndexWrit
         return consolidation_report(diskann::consolidation_report::status_code::LOCK_FAIL, 0, 0, 0, 0, 0, 0, 0);
     }
 
-    diskann::cout << "Starting consolidate_deletes... ";
-
     std::unique_ptr<tsl::robin_set<uint32_t>> old_delete_set(new tsl::robin_set<uint32_t>);
     {
         std::unique_lock<std::shared_timed_mutex> dl(_delete_lock);
@@ -2475,7 +2473,6 @@ consolidation_report Index<T, TagT, LabelT>::consolidate_deletes(const IndexWrit
     }
 
     double duration = timer.elapsed() / 1000000.0;
-    diskann::cout << " done in " << duration << " seconds." << std::endl;
     return consolidation_report(diskann::consolidation_report::status_code::SUCCESS, ret_nd, max_points,
                                 empty_slots_size, old_delete_set_size, delete_set_size, num_calls_to_process_delete,
                                 duration);

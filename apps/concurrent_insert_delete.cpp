@@ -19,6 +19,66 @@
 
 namespace po = boost::program_options;
 
+
+template <typename T, typename TagT = uint32_t>
+void calculate_recall(const uint32_t K, TagT*& groundtruth_ids, std::vector<TagT>& query_result_tags, const uint32_t query_num, const uint32_t groundtruth_dim, uint32_t chunk_index = 1, size_t chunk_size = 100000) {
+    double total_recall = 0.0;
+
+    for (int32_t i = 0; i < query_num; i++) {
+        std::set<uint32_t> groundtruth_closest_neighbors;
+        std::set<uint32_t> calculated_closest_neighbors;
+        for (int32_t j = 0; j < K; j++) {
+            calculated_closest_neighbors.insert(*(query_result_tags.data() + i * K + j) - (chunk_index - 1) * chunk_size);
+            groundtruth_closest_neighbors.insert(*(groundtruth_ids + i * groundtruth_dim + j));
+        }
+        uint32_t matching_neighbors = 0;
+        for (uint32_t x : calculated_closest_neighbors) if (groundtruth_closest_neighbors.count(x - 1)) matching_neighbors++;
+        double recall = matching_neighbors / (double)K;
+        total_recall += recall;        
+    }
+    double average_recall = total_recall / (query_num);
+
+    std::cout << K << "Recall@" << K << ": " << average_recall * 100 << "%" << std::endl;
+}
+
+template <typename T, typename TagT = uint32_t>
+void search(diskann::AbstractIndex &index, const T* query, size_t query_num, uint32_t query_aligned_dim, uint32_t K, uint32_t L, uint32_t search_threads, std::vector<uint32_t>& query_result_tags, std::vector<T *>& res) {
+    std::vector<double> latencies_ms(query_num, 0.0);
+
+    auto global_start = std::chrono::high_resolution_clock::now();
+
+    #pragma omp parallel for num_threads((int32_t)search_threads) schedule(dynamic)
+    for (size_t i = 0; i < query_num; i++) {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        index.search_with_tags(query + i * query_aligned_dim,
+                                K, L,
+                                query_result_tags.data() + i * K,
+                                nullptr, res);
+
+        auto end = std::chrono::high_resolution_clock::now();
+        latencies_ms[i] = std::chrono::duration<double, std::milli>(end - start).count();
+    }
+
+    auto global_end = std::chrono::high_resolution_clock::now();
+    double total_time_ms = std::chrono::duration<double, std::milli>(global_end - global_start).count();
+    double total_time_sec = total_time_ms / 1000.0;
+
+    double avg_latency_ms = 0.0;
+    for (double latency : latencies_ms) avg_latency_ms += latency;
+    avg_latency_ms /= query_num;
+
+    double qps = static_cast<double>(query_num) / total_time_sec;
+    double qps_per_thread = qps / static_cast<double>(search_threads);
+
+    std::cout << "search(): " << query_num << " queries using "
+              << search_threads << " threads\n";
+    std::cout << "  Total time:     " << total_time_ms << " ms\n";
+    std::cout << "  Avg latency:    " << avg_latency_ms << " ms/query\n";
+    std::cout << "  QPS:            " << qps << "\n";
+    std::cout << "  QPS/thread:     " << qps_per_thread << "\n";
+}
+
 template <typename T, typename TagT = uint32_t>
 void build(diskann::AbstractIndex &index, size_t end, int32_t thread_count, T *data, size_t aligned_dim) {
     #pragma omp parallel for num_threads(thread_count) schedule(dynamic)
@@ -29,27 +89,66 @@ void build(diskann::AbstractIndex &index, size_t end, int32_t thread_count, T *d
 }
 
 template <typename T, typename TagT = uint32_t>
-void insert(diskann::AbstractIndex &index, size_t start, size_t end, int32_t thread_count, T *data, size_t aligned_dim) {
+void insert(diskann::AbstractIndex &index, size_t start, size_t end,
+            int32_t thread_count, T* data, size_t aligned_dim) {
+
+    size_t count = end - start;
+    std::vector<double> latencies_ms(count, 0.0);
+
+    auto global_start = std::chrono::high_resolution_clock::now();
+
     #pragma omp parallel for num_threads(thread_count) schedule(dynamic)
     for (int64_t j = start; j < (int64_t)end; j++) {
+        auto local_start = std::chrono::high_resolution_clock::now();
+
         index.insert_point(data + j * aligned_dim, 1 + static_cast<TagT>(j));
+
+        auto local_end = std::chrono::high_resolution_clock::now();
+        latencies_ms[j - start] = std::chrono::duration<double, std::milli>(local_end - local_start).count();
     }
-    std::cout << "inserted [" << start << "," << end-1 << "]" << std::endl;
+
+    auto global_end = std::chrono::high_resolution_clock::now();
+    double total_time_ms = std::chrono::duration<double, std::milli>(global_end - global_start).count();
+    double total_time_sec = total_time_ms / 1000.0;
+
+    double total_latency = std::accumulate(latencies_ms.begin(), latencies_ms.end(), 0.0);
+    double avg_latency_ms = total_latency / static_cast<double>(count);
+    double qps = static_cast<double>(count) / total_time_sec;
+    double qps_per_thread = qps / static_cast<double>(thread_count);
+
+    std::cout << "insert(): inserted [" << start << "," << end - 1 << "] using "
+              << thread_count << " threads\n";
+    std::cout << "  Total time:     " << total_time_ms << " ms\n";
+    std::cout << "  Avg latency:    " << avg_latency_ms << " ms/point\n";
+    std::cout << "  QPS:            " << qps << "\n";
+    std::cout << "  QPS/thread:     " << qps_per_thread << "\n";
 }
 
 template <typename T, typename TagT = uint32_t>
-void delete_and_consolidate(diskann::AbstractIndex &index, const diskann::IndexWriteParameters &delete_params, size_t start, size_t end){
-    for (size_t i = start; i < end; i++)
+void delete_and_consolidate(diskann::AbstractIndex &index,
+                             const diskann::IndexWriteParameters &delete_params,
+                             size_t start, size_t end) {
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    for (size_t i = start; i < end; i++) {
         index.lazy_delete(static_cast<TagT>(1 + i));
+    }
 
     index.consolidate_deletes(delete_params);
-    std::cout << "deleted and consolidated [" << start << "," << end-1 << "]" << std::endl;
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+    std::cout << "deleted and consolidated [" << start << "," << end - 1
+              << "] in " << duration_ms << " ms" << std::endl;
 }
 
 template <typename T, typename TagT = uint32_t>
-void experiment(const std::string &data_path, 
-                size_t chunk_size,
-                uint32_t R, uint32_t L, float alpha,
+void experiment(const std::string &data_path,
+                const std::string &query_path,
+                const std::string &chunks_groundtruth_path, 
+                size_t chunk_size, uint32_t R, 
+                uint32_t L, uint32_t K, float alpha,
                 uint32_t build_threads, uint32_t insert_threads,
                 uint32_t consolidate_threads, uint32_t search_threads) {
 
@@ -94,6 +193,30 @@ void experiment(const std::string &data_path,
     index->set_start_points_at_random(static_cast<T>(0));
     build<T, TagT>(*index, chunk_size, build_threads, data, aligned_dim);
 
+    // Load queries
+    size_t query_num, query_dim, query_aligned_dim;
+    T *query = nullptr;
+    diskann::load_aligned_bin<T>(query_path, query, query_num, query_dim, query_aligned_dim);
+
+    // I don't know why it is need but it is somehow necessary to call seach_with_tags.
+    std::vector<T *> res = std::vector<T *>();
+
+    // Allocate the space to store result of the queries
+    std::vector<TagT> query_result_tags;
+    query_result_tags.resize(query_num * K);
+
+    // Perform a search on the first chunk
+    search(*index, query, query_num, query_aligned_dim, K, L, search_threads, query_result_tags, res);
+
+    // Load groundtruth ids for the results of the search on the first chunk
+    TagT *groundtruth_ids = nullptr;
+    float *groundtruth_dists = nullptr;
+    size_t n_groundtruth, groundtruth_dim;
+    diskann::load_truthset(chunks_groundtruth_path + std::string("1_groundtruth.bin"), groundtruth_ids, groundtruth_dists, n_groundtruth, groundtruth_dim);
+
+    // Calculate recall for the first chunk
+    calculate_recall<T>(K, groundtruth_ids, query_result_tags, query_num, groundtruth_dim, 1, chunk_size);
+
     std::future<void> insert_task;
     std::future<void> delete_task;
 
@@ -123,15 +246,23 @@ void experiment(const std::string &data_path,
         // Wait for the current batches to be done
         insert_task.wait();
         delete_task.wait();
+
+        // Perform a search on the current chunk availabe in the index
+        search(*index, query, query_num, query_aligned_dim, K, L, search_threads, query_result_tags, res);
+
+        // Load groundtruth ids for the results of the search on the current chunk
+        diskann::load_truthset(chunks_groundtruth_path + std::to_string(current_chunk) + std::string("_groundtruth.bin"), groundtruth_ids, groundtruth_dists, n_groundtruth, groundtruth_dim);
+
+        // Calculate recall for the current chunk
+        calculate_recall<T>(K, groundtruth_ids, query_result_tags, query_num, groundtruth_dim, current_chunk, chunk_size);
     }
     
     diskann::aligned_free(data);
 }
 
-int main(int argc, char **argv)
-{
-    std::string data_type, data_path;
-    uint32_t R, L, build_threads, insert_threads, consolidate_threads, search_threads;
+int main(int argc, char **argv) {
+    std::string data_type, data_path, query_path, chunks_groundtruth_path;
+    uint32_t R, L, K, build_threads, insert_threads, consolidate_threads, search_threads;
     float alpha;
     size_t chunk_size;
 
@@ -145,9 +276,12 @@ int main(int argc, char **argv)
             ("help,h", "Print information on arguments")
             ("data_type", po::value<std::string>(&data_type)->required(), "Type of data")
             ("data_path", po::value<std::string>(&data_path)->required(), "Path to data")
+            ("query_path", po::value<std::string>(&query_path)->required(), "Path to query")
+            ("chunks_groundtruth_path", po::value<std::string>(&chunks_groundtruth_path)->required(), "Path to groundtruth for chunks")
             ("chunk_size", po::value<size_t>(&chunk_size)->required(), "Chunk size")
             ("R", po::value<uint32_t>(&R)->required(), "Value of R")
             ("L", po::value<uint32_t>(&L)->required(), "Value of L")
+            ("K", po::value<uint32_t>(&K)->required(), "Value of K")
             ("alpha", po::value<float>(&alpha)->required(), "Alpha parameter")
             ("build_threads", po::value<uint32_t>(&build_threads)->required(), "Threads for building")
             ("insert_threads", po::value<uint32_t>(&insert_threads)->required(), "Threads for insertion")
@@ -170,11 +304,11 @@ int main(int argc, char **argv)
     }
 
     if (data_type == std::string("int8"))
-        experiment<int8_t>(data_path, chunk_size, R, L, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
+        experiment<int8_t>(data_path, query_path, chunks_groundtruth_path, chunk_size, R, L, K, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
     else if (data_type == std::string("uint8"))
-        experiment<uint8_t>(data_path, chunk_size, R, L, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
+        experiment<uint8_t>(data_path, query_path, chunks_groundtruth_path, chunk_size, R, L, K, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
     else if (data_type == std::string("float"))
-        experiment<float>(data_path, chunk_size, R, L, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
+        experiment<float>(data_path, query_path, chunks_groundtruth_path, chunk_size, R, L, K, alpha, build_threads, insert_threads, consolidate_threads, search_threads);
     else
         std::cout << "Unsupported type. Use float/int8/uint8" << std::endl;
 

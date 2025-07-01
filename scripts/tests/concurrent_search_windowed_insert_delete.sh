@@ -7,7 +7,7 @@ cd "$(dirname "$0")/../.." || exit 1
 DATASET="sift"
 DATA_TYPE="float"
 DATA_PATH="data/$DATASET/${DATASET}_base.bin"
-QUERY_PATH="data/$DATASET/${DATASET}_clustered_query3.bin"
+QUERY_PATH="data/$DATASET/${DATASET}_query.bin"
 CHUNKS_GROUNDTRUTH_PATH+="data/$DATASET/${DATASET}_chunk_groundtruths/${DATASET}_chunk"
 R=32
 L=128
@@ -17,7 +17,7 @@ CHUNK_SIZE=100000
 BUILD_THREADS=4
 INSERT_THREADS=4
 CONSOLIDATE_THREADS=4
-SEARCH_THREADS=4
+SEARCH_THREADS=32
 
 # Step 1: Insertions and deletions
 ./build/apps/concurrent_search_windowed_insert_delete \

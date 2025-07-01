@@ -11,7 +11,7 @@ R=64
 L=128
 B=0.003
 M=1
-PQ_CHUNKS=16
+PQ_CHUNKS=0
 CONFIG_TAG="R${R}_L${L}_A1.2_PQ${PQ_CHUNKS}"  # Alpha is fixed at 1.2
 DATA_PATH="./data/$DATASET/${DATASET}_base.bin"
 INDEX_PREFIX="./index/$DATASET/disk_index_${DATASET}_learn_${CONFIG_TAG}"
@@ -26,4 +26,4 @@ INDEX_PREFIX="./index/$DATASET/disk_index_${DATASET}_learn_${CONFIG_TAG}"
   -L "$L" \
   -B "$B" \
   -M "$M" \
-  --build_PQ_bytes "$PQ_CHUNKS"
+  #--build_PQ_bytes "$PQ_CHUNKS"

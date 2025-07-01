@@ -15,12 +15,12 @@ data_type="float"
 dist_fn="l2"
 
 data_path="data/$dataset/${dataset}_base.bin"
-query_path="data/$dataset/${dataset}_query.bin"
-groundtruth_path="data/$dataset/${dataset}_groundtruth.bin"
+query_path="data/$dataset/${dataset}_clustered_query2.bin"
+groundtruth_path="data/$dataset/${dataset}_groundtruth_clustered2.bin"
 
 # Index config
 R=32
-K=10
+K=100
 L=128
 alpha=1.2
 ins_thr=32

@@ -253,7 +253,7 @@ void experiment(const std::string &data_path,
                                             .is_enable_tags(true)
                                             .is_filtered(false)
                                             .with_num_frozen_pts(0)
-                                            .is_concurrent_consolidate(false)
+                                            .is_concurrent_consolidate(true)
                                             .build();
 
     diskann::IndexFactory index_factory = diskann::IndexFactory(index_config);
@@ -285,7 +285,7 @@ void experiment(const std::string &data_path,
 
     search_task = std::async(std::launch::async,
         [&index, query, query_num, query_aligned_dim, K, L, search_threads, &query_result_tags, &res]() {
-            for (size_t i = 0; i < 1000; i++) {
+            for (size_t i = 0; i < 1000000; i++) {
                 search<T, TagT>(*index, query, query_num, query_aligned_dim, K, L, search_threads, query_result_tags, res);
             }
         });
@@ -323,7 +323,7 @@ void experiment(const std::string &data_path,
         
         // No insert and delete phase
         std::cout << "[" << get_current_timestamp() << "] " << "sleep_insert_delete_phase_start()" << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(30));
 
     }
 

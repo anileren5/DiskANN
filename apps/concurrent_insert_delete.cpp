@@ -241,7 +241,7 @@ void experiment(const std::string &data_path,
                                             .is_enable_tags(true)
                                             .is_filtered(false)
                                             .with_num_frozen_pts(0)
-                                            .is_concurrent_consolidate(false)
+                                            .is_concurrent_consolidate(true)
                                             .build();
 
     diskann::IndexFactory index_factory = diskann::IndexFactory(index_config);

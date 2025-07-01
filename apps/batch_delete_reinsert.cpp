@@ -264,6 +264,7 @@ void experiment(const std::string &data_path, const std::string &query_path, con
                             .with_index_search_params(search_params)
                             .with_data_load_store_strategy(diskann::DataStoreStrategy::MEMORY)
                             .with_graph_load_store_strategy(diskann::GraphStoreStrategy::MEMORY)
+                            .is_concurrent_consolidate(true)
                             .build();
 
     // Create the index object

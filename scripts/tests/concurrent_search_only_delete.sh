@@ -17,7 +17,7 @@ CHUNK_SIZE=100000
 BUILD_THREADS=4
 INSERT_THREADS=4
 CONSOLIDATE_THREADS=4
-SEARCH_THREADS=4
+SEARCH_THREADS=16
 
 # Step 1: Insertions and deletions
 ./build/apps/concurrent_search_only_delete \

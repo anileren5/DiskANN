@@ -55,6 +55,9 @@ target_link_libraries(concurrent_search_only_delete_minibatch_consolidate ${PROJ
 add_executable(concurrent_search_windowed_insert_delete concurrent_search_windowed_insert_delete.cpp)
 target_link_libraries(concurrent_search_windowed_insert_delete ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
 
+add_executable(only_search only_search.cpp)
+target_link_libraries(only_search ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
+
 if (NOT MSVC)
     install(TARGETS build_memory_index
             build_stitched_index
@@ -73,6 +76,7 @@ if (NOT MSVC)
             concurrent_search_only_insert_fixed_size
             concurrent_search_only_delete_minibatch_consolidate
             concurrent_search_windowed_insert_delete
+            only_search
             RUNTIME
     )
 endif()

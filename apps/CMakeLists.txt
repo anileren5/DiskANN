@@ -34,6 +34,9 @@ target_link_libraries(batch_delete_reinsert ${PROJECT_NAME} ${DISKANN_TOOLS_TCMA
 add_executable(concurrent_insert_delete concurrent_insert_delete.cpp)
 target_link_libraries(concurrent_insert_delete ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
 
+add_executable(concurrent_insert_delete_non_uniform_chunks concurrent_insert_delete_non_uniform_chunks.cpp)
+target_link_libraries(concurrent_insert_delete_non_uniform_chunks ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
+
 add_executable(concurrent_search concurrent_search.cpp)
 target_link_libraries(concurrent_search ${PROJECT_NAME} ${DISKANN_TOOLS_TCMALLOC_LINK_OPTIONS} Boost::program_options)
 
